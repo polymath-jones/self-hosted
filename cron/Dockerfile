@@ -10,14 +10,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends cron && \
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# Create necessary directories
+RUN mkdir -p /etc/cron.d /var/spool/cron
+
 # Now use the actual base image
 FROM ${BASE_IMAGE}
 USER 0
 
-# Copy cron and entrypoint from the installer stage
+# Copy cron binaries and configuration from the installer stage
 COPY --from=installer /usr/sbin/cron /usr/sbin/cron
-# Note: crond might not exist in Ubuntu, only copy if it exists
-RUN if [ -f /usr/sbin/crond ]; then cp /usr/sbin/crond /usr/sbin/crond-backup; fi
 COPY --from=installer /etc/cron.d /etc/cron.d
 COPY --from=installer /etc/crontab /etc/crontab
 COPY --from=installer /var/spool/cron /var/spool/cron
